@@ -3,605 +3,562 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MatchDay Live</title>
+<title>MatchDay Live — Automated Arena</title>
 <style>
 :root{
-  --text:#e8f0ea; --dim:#7d9385; --border:#1e3a2b; --green:#22c55e;
-  --gold:#e8b23f; --red:#ff4d3d; --orange:#ff5c39; --card:#10231a; --card2:#0d1d15;
+  --bg:#070d14; --card:#0f1824; --border:#1a283b; --accent:#10b981;
+  --gold:#f59e0b; --red:#ef4444; --text:#f1f5f9; --dim:#64748b;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a140f;margin:0;color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:13px;line-height:1.45}
-.app{max-width:480px;margin:0 auto;padding:16px 12px 90px}
-.condensed{font-family:'Arial Narrow','Oswald',Impact,'Segoe UI',sans-serif}
-.logo{font-family:'Arial Narrow','Oswald',Impact,sans-serif;font-weight:900;font-size:27px;letter-spacing:1px;margin-bottom:14px;cursor:pointer}
-.logo .dot{color:#ff6a3d;margin:0 2px}
-.tabs{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
-.tab{padding:9px 15px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:13.5px;font-weight:600;cursor:pointer}
-.tab.on{background:#f0f0f0;color:#0a140f;border-color:#f0f0f0;font-weight:800}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;padding-bottom:70px}
 
-/* Landing */
-.hero{font-family:'Arial Narrow','Oswald',Impact,sans-serif;font-size:44px;line-height:1.04;font-weight:900;letter-spacing:.2px;margin:14px 0 12px}
-.herosub{color:var(--dim);font-size:15px;line-height:1.55;margin-bottom:18px}
-.cta{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:14px;cursor:pointer}
-.cta .ico{font-size:30px;margin-bottom:10px}
-.cta h3{font-family:'Arial Narrow','Oswald',Impact,sans-serif;font-size:23px;letter-spacing:.3px;margin-bottom:6px}
-.cta p{color:var(--dim);font-size:13.5px;line-height:1.55;margin-bottom:12px}
-.cta .go{font-weight:800;font-size:14px}
-.cta.orange{background:var(--orange);border-color:var(--orange);color:#1a0d08}
-.cta.orange p{color:#4a2015}
-.cta.orange .go{color:#1a0d08}
-.cta:active{transform:scale(.985)}
-.stats{display:flex;gap:26px;margin:18px 0;padding-top:16px;border-top:1px solid var(--border);color:var(--dim);font-size:13.5px}
-.stats b{color:var(--text);font-size:22px;font-weight:900;margin-right:5px}
+header{
+  padding:12px 16px;background:#05090f;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:40;
+}
+.brand{font-size:18px;font-weight:900;letter-spacing:1px}
+.brand span{color:var(--gold)}
+.status-pill{font-size:11px;padding:3px 8px;border-radius:12px;background:#1e293b;color:var(--dim);font-weight:700}
+.status-pill.live{background:#064e3b;color:#34d399}
 
-/* Matches */
-.sec{font-family:'Arial Narrow','Oswald',Impact,sans-serif;font-size:22px;font-weight:700;letter-spacing:.4px;margin:20px 0 10px}
-.sub{color:var(--dim);font-size:13px;margin:-6px 0 12px}
-.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:13px;cursor:pointer}
-.mcard:active{transform:scale(.98)}
-.tag{display:inline-block;background:#173626;color:var(--green);font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:6px;letter-spacing:1px}
-.tag.ko{background:#3a1d1d;color:#ff8a7d}
-.tag.fr{background:#3a2e17;color:var(--gold)}
-.teams{display:flex;justify-content:space-between;font-size:18px;font-weight:800;margin:9px 0 2px}
-.score{font-size:29px;font-weight:900;color:var(--gold);text-align:center;letter-spacing:2px}
-.mmeta{display:flex;justify-content:space-between;color:var(--green);font-size:12px;font-weight:700;margin-top:7px}
-.eye{color:var(--dim);font-weight:600}
+nav{
+  position:fixed;bottom:0;left:0;right:0;height:55px;background:#05090f;
+  border-top:1px solid var(--border);display:flex;z-index:50;
+}
+nav button{
+  flex:1;background:none;border:none;color:var(--dim);font-size:11px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+}
+nav button.active{color:var(--accent)}
 
-/* Standings */
-.stbl{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px}
-.stbl h4{font-size:14px;margin-bottom:6px}
-.stbl table{width:100%;border-collapse:collapse;font-size:12px}
-.stbl th{color:var(--dim);font-weight:600;text-align:center;padding:3px}
-.stbl td{padding:4px;text-align:center;color:#c9d6cd}
-.stbl td:first-child,.stbl th:first-child{text-align:left}
-.stbl tr.adv td{color:#fff;font-weight:800}
-.stbl tr.adv td:first-child{box-shadow:inset 3px 0 0 var(--green)}
+.container{padding:14px;max-width:540px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.title{font-size:15px;font-weight:800;margin-bottom:4px}
+.sub{font-size:12px;color:var(--dim);margin-bottom:12px}
 
-/* Blitz Canvas */
-.screen{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#000}
-.screen canvas{width:100%;display:block}
-.bug{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.88);border-left:4px solid var(--gold);padding:8px 14px;border-radius:8px;font-weight:800}
-.bug .s{font-size:18px}.bug .m{font-size:12px;color:var(--gold);font-weight:700}
-.ban{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);background:var(--green);color:#04150b;font-weight:900;font-size:20px;padding:10px 22px;border-radius:8px;opacity:0;pointer-events:none;white-space:nowrap}
-.ban.show{animation:banA 2.4s forwards}
-@keyframes banA{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
-.mini{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px;margin-top:8px;cursor:pointer}
-.mini.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
-.mini canvas{border-radius:8px}
+/* Video Stage */
+.stage{position:relative;background:#000;border-radius:10px;overflow:hidden;width:100%;height:230px;display:flex;align-items:center;justify-content:center}
+video{width:100%;height:100%;object-fit:contain}
+.hud{
+  position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;
+  background:rgba(0,0,0,0.75);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:800;pointer-events:none;
+}
+.hud-score{color:var(--gold);font-size:14px}
+.viewer-tag{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.4);padding:2px 6px;border-radius:4px}
 
-/* Controls & Stream */
-.input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px;color:var(--text);font-size:14px;outline:none;margin:8px 0 14px}
-.pick{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;font-size:15px;font-weight:700}
-.btnrow{display:flex;gap:8px;flex-wrap:wrap}
-.gbtn{background:var(--green);color:#04150b;border:none;border-radius:10px;padding:13px 12px;font-weight:800;font-size:13.5px;cursor:pointer;flex:1;min-width:110px}
-.nbtn{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 14px;font-weight:700;font-size:13px;cursor:pointer}
-.rbtn{background:var(--red);color:#fff;border:none;border-radius:10px;padding:13px 16px;font-weight:800;font-size:13.5px;cursor:pointer}
-.livebar{display:flex;align-items:center;gap:8px;color:var(--red);font-weight:800;font-size:15px;margin:12px 0 4px}
-.livedot{width:9px;height:9px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite}
-@keyframes blink{50%{opacity:.3}}
-.feed{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;font-size:13px}
-.feed .how{color:var(--dim);font-size:11px}
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th{color:var(--dim);text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)}
+td{padding:8px 4px;border-bottom:1px solid #142030}
 
-/* Chat */
-.chat{background:var(--card);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;height:240px;margin-top:12px}
-.chat-h{padding:9px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--dim)}
-.chat-b{flex:1;overflow-y:auto;padding:9px 12px;font-size:12.5px}
-.msg{margin-bottom:6px;line-height:1.4}
-.msg .u{color:#7db8ff;font-weight:700}
-.msg.sys{color:var(--gold);font-style:italic}
-.chat-i{display:flex;border-top:1px solid var(--border)}
-.chat-i input{flex:1;background:transparent;border:none;color:var(--text);padding:11px;outline:none;font-size:13px}
-.chat-i button{background:#f0f0f0;color:#0a140f;border:none;padding:0 15px;font-weight:800;cursor:pointer}
+/* Buttons & Inputs */
+.btnrow{display:flex;gap:8px;margin-top:10px}
+.btn{
+  border:none;border-radius:8px;padding:10px 14px;font-weight:800;font-size:12.5px;
+  cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;
+}
+.btn-green{background:var(--accent);color:#022c22}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.input{
+  width:100%;background:#09101a;border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;color:#fff;font-size:13px;outline:none;margin-bottom:8px;
+}
 
-/* Modal & Mic */
-.fab{position:fixed;bottom:20px;right:16px;background:var(--red);color:#fff;border:none;border-radius:999px;padding:13px 18px;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 4px 18px rgba(255,77,61,.45);z-index:50}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
-.modal.open{display:flex}
-.mbox{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;width:100%;max-width:420px}
-.mic{background:var(--green);color:#04150b;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;font-size:13px}
-.mic.off{background:transparent;border:1px solid var(--border);color:var(--text)}
-.mchat{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;height:130px;overflow-y:auto;font-size:13px;margin:10px 0 8px}
-.mnote{color:var(--dim);font-size:11px;margin-top:8px;line-height:1.5}
-.minput{display:flex;gap:6px}
-.minput input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px;color:var(--text);outline:none;font-size:13px}
-.minput button{background:#f0f0f0;color:#0a140f;border:none;border-radius:8px;padding:0 15px;font-weight:800;cursor:pointer}
-.close{float:right;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px}
-.conn{position:fixed;top:8px;left:50%;transform:translateX(-50%);font-size:10px;padding:3px 10px;border-radius:999px;background:#173626;color:var(--green);z-index:70;font-weight:700}
-.conn.off{background:#3a1d1d;color:#ff8a7d}
+/* Chat & Items */
+.chat-container{margin-top:10px;border-top:1px solid var(--border);padding-top:8px}
+.chat-box{height:120px;overflow-y:auto;background:#05090f;border-radius:8px;padding:8px;font-size:12px;display:flex;flex-direction:column;gap:4px}
+.chat-msg .u{color:#38bdf8;font-weight:700;margin-right:4px}
+.match-item{background:#09101a;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.tag{background:var(--border);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700}
+.tag.live{background:#064e3b;color:#34d399}
 </style>
 </head>
 <body>
-<div class="app" id="app">
-  <div class="logo condensed" onclick="go('landing')">MATCHDAY<span class="dot">●</span>LIVE</div>
-  <div class="tabs" id="tabs">
-    <button class="tab" id="tab-home" onclick="go('home')">Watch</button>
-    <button class="tab" id="tab-blitz" onclick="go('blitz')">⚡ Blitz</button>
-    <button class="tab" id="tab-stream" onclick="go('stream')">Stream</button>
-    <button class="tab" id="tab-ctrl" onclick="go('ctrl')">Control room</button>
-    <button class="tab" id="tab-tourney" onclick="go('tourney')">🏆 Tourney</button>
+
+<header>
+  <div class="brand">MATCHDAY<span>●</span>LIVE</div>
+  <div class="status-pill" id="connSt">Connecting…</div>
+</header>
+
+<!-- TAB 1: WATCH -->
+<div id="tab-watch" class="container">
+  <div class="card" id="playerCard" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span class="title" id="mTitle">Match Screen</span>
+      <button class="btn-outline" style="padding:4px 8px;font-size:11px;" onclick="closeViewer()">Close ✕</button>
+    </div>
+    
+    <div class="stage">
+      <video id="viewerVideo" playsinline autoplay muted controls></video>
+      <div class="hud">
+        <span id="hudTeams">HOME vs AWAY</span>
+        <span id="hudScore" class="hud-score">0 - 0</span>
+        <span class="viewer-tag" id="hudViewers">👁 0</span>
+        <span id="hudMin" style="color:var(--accent);">0'</span>
+      </div>
+    </div>
+    <div class="sub" style="margin-top:6px;margin-bottom:0;" id="streamBufferNote">Live stream syncing…</div>
+
+    <div class="btnrow">
+      <button class="btn btn-green" onclick="claimGoal('home')">⚽ Goal Home</button>
+      <button class="btn btn-green" onclick="claimGoal('away')">⚽ Goal Away</button>
+      <button class="btn btn-red" onclick="callFT()">Full Time</button>
+    </div>
+
+    <!-- Viewer Chat -->
+    <div class="chat-container">
+      <div class="sub" style="margin-bottom:4px;font-weight:700;">Live Fan Chat</div>
+      <div class="chat-box" id="viewerChat"></div>
+      <div class="btnrow" style="margin-top:6px;">
+        <input class="input" id="viewerInput" placeholder="Send a message…" style="margin-bottom:0;" onkeydown="if(event.key==='Enter')sendChatMessage('viewer')">
+        <button class="btn btn-outline" style="flex:none;padding:0 14px;" onclick="sendChatMessage('viewer')">Send</button>
+      </div>
+    </div>
   </div>
-  <div id="view"></div>
+
+  <div class="card">
+    <div class="title">Active Matches & Live Pitch Streams</div>
+    <div id="matchList">Scanning for games…</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Live Match Feed</div>
+    <div id="feedList" class="sub" style="margin-bottom:0;line-height:1.6;max-height:100px;overflow-y:auto;">No goals logged yet.</div>
+  </div>
 </div>
 
-<div class="conn" id="conn">connecting…</div>
-<button class="fab" id="fab" style="display:none" onclick="openModal()">💬 Players</button>
+<!-- TAB 2: STREAM STUDIO WITH AI CAM -->
+<div id="tab-stream" class="container" style="display:none;">
+  <div class="card">
+    <div class="title">Broadcaster Studio + AI Scoreboard Cam</div>
+    <div class="sub">Point your camera at the pitch. The built-in detector auto-recognizes goals to avoid manual entry.</div>
 
-<div class="modal" id="modal">
-  <div class="mbox">
-    <button class="close" onclick="closeModal()">Close</button>
-    <h3 style="font-family:'Arial Narrow',Impact,sans-serif;font-size:20px;">Talk to the other team</h3>
-    <div style="margin-top:12px">
-      <button class="mic off" id="micbtn" onclick="toggleMic()">🎙 Turn on mic</button> 
-      <span id="micst" class="mnote"></span>
+    <div class="stage" style="margin-bottom:12px;">
+      <video id="streamerPreview" playsinline autoplay muted></video>
+      <canvas id="ocrCanvas" style="display:none;" width="320" height="240"></canvas>
+      <div class="hud" id="streamerHud" style="display:none;">
+        <span id="stHudMatch">LIVE</span>
+        <span class="viewer-tag" id="stHudViewers">👁 0 watching</span>
+      </div>
     </div>
-    <audio id="raudio" autoplay playsinline></audio>
-    <div class="mchat" id="mchat"></div>
-    <div class="minput">
-      <input id="minput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendPM()">
-      <button onclick="sendPM()">Send</button>
+
+    <div id="streamControls">
+      <label class="sub">Select Fixture:</label>
+      <select id="streamMatchSelect" class="input"></select>
+      <div class="btnrow">
+        <button class="btn btn-green" onclick="startStreamingSession('camera')">📹 Stream Camera + AI Cam</button>
+        <button class="btn btn-outline" onclick="startStreamingSession('screen')">📱 Share Screen</button>
+      </div>
     </div>
-    <div class="mnote">Chat and voice go straight to the other player. Demo mode simulates the rival.</div>
+
+    <div id="streamingActive" style="display:none;">
+      <div class="status-pill live" style="display:inline-block;margin-bottom:8px;">AI CAM MONITORING SCOREBOARD</div>
+      <div class="sub" id="uploadStatus">Broadcasting pitch chunks…</div>
+      <button class="btn btn-red" style="width:100%;margin-bottom:12px;" onclick="stopStreamingSession()">End Broadcast</button>
+
+      <!-- Streamer Chat -->
+      <div class="chat-container">
+        <div class="sub" style="margin-bottom:4px;font-weight:700;">Live Match Chat</div>
+        <div class="chat-box" id="streamerChat"></div>
+        <div class="btnrow" style="margin-top:6px;">
+          <input class="input" id="streamerInput" placeholder="Reply to fans…" style="margin-bottom:0;" onkeydown="if(event.key==='Enter')sendChatMessage('streamer')">
+          <button class="btn btn-outline" style="flex:none;padding:0 14px;" onclick="sendChatMessage('streamer')">Send</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- TAB 3: TOURNAMENT & AUTO TABLES -->
+<div id="tab-tourney" class="container" style="display:none;">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="title" id="tName">Tournament</span>
+      <span class="tag live" id="tStatus">RUNNING</span>
+    </div>
+    <div id="bracketView"></div>
+  </div>
+
+  <div class="card">
+    <div class="title">Group Standings (Auto-Updating)</div>
+    <div id="groupTables">Waiting for match results…</div>
+  </div>
+</div>
+
+<!-- TAB 4: OPERATOR ROOM -->
+<div id="tab-operator" class="container" style="display:none;">
+  <div class="card">
+    <div class="title">Operator & Referee Room</div>
+    <div class="sub">Oversee AI verification queues, goal disputes, and bracket generation.</div>
+    <div class="btnrow">
+      <input class="input" id="opkeyInput" type="password" placeholder="Enter Operator Key" style="margin-bottom:0;">
+      <button class="btn btn-green" style="flex:none;" onclick="authOp()">Unlock</button>
+    </div>
+
+    <div id="opArea" style="display:none;margin-top:14px;">
+      <div class="title" style="color:var(--gold);">Pending AI Score Queue</div>
+      <div id="vqList" class="sub">No pending reviews.</div>
+
+      <div class="title" style="margin-top:14px;">Bracket Setup</div>
+      <input class="input" id="newTName" placeholder="Tournament Name (e.g. Summer Cup)">
+      <div class="btnrow">
+        <button class="btn btn-outline" onclick="createT()">Open Registration</button>
+        <button class="btn btn-green" onclick="send('tStart')">Draw Groups & Start</button>
+      </div>
+
+      <div class="title" style="margin-top:14px;">Player Self-Registration</div>
+      <div class="btnrow">
+        <input class="input" id="regName" placeholder="Player Name" style="margin-bottom:0;">
+        <button class="btn btn-outline" style="flex:none;" onclick="registerPlayer()">Join</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav>
+  <button id="nav-watch" class="active" onclick="showTab('watch')">📺 Arena</button>
+  <button id="nav-stream" onclick="showTab('stream')">📹 Stream + AI</button>
+  <button id="nav-tourney" onclick="showTab('tourney')">🏆 Brackets</button>
+  <button id="nav-operator" onclick="showTab('operator')">⚙️ Referee</button>
+</nav>
 
 <script>
 const $ = id => document.getElementById(id);
-const esc = x => String(x == null ? '' : x).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const NICK = (() => {
-  try { return localStorage.nick || (localStorage.nick = 'fan' + Math.floor(1000 + Math.random() * 9000)); }
-  catch(e) { return 'fan' + Math.floor(Math.random() * 9999); }
+  try { return localStorage.nick || (localStorage.nick = 'FAN_' + Math.floor(100 + Math.random() * 900)); }
+  catch(e) { return 'FAN_' + Math.floor(100 + Math.random() * 900); }
 })();
-let OP = false;
 
-const S = { view: 'home', watch: null, pin: null, stream: { live: false, mid: null, me: null, side: null, token: null } };
-let ST = { matches: [], feed: [], vq: [], ko: { sf1: null, sf2: null, final: null }, champ: null, qualified: [], sim: true, t: { name: '', status: 'registration', players: [], groups: null } };
-let MODE = 'sim';
-const FLASH = {};
-const B = { active: null, q: [], replay: false, pulse: null };
-const rafs = [];
+let ws;
+let ST = { matches: [], feed: [], t: {}, vq: [] };
+let activeMatchId = null;
+let streamMid = null;
 
-function clearView() { rafs.forEach(cancelAnimationFrame); rafs.length = 0; }
+/* ---------- WEBSOCKET & STATE ---------- */
+function initWS() {
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  ws = new WebSocket(proto + location.host);
 
-/* ---------------- SERVER CONNECTION ---------------- */
-let ws = null;
-function connect() {
-  try {
-    const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-    ws = new WebSocket(proto + location.host);
-    ws.onopen = () => {
-      MODE = 'server';
-      $('conn').textContent = '● live server';
-      $('conn').classList.remove('off');
-      try { if (localStorage.opkey) send({ act: 'auth', key: localStorage.opkey }); } catch(e) {}
-    };
-    ws.onmessage = e => {
-      const d = JSON.parse(e.data);
-      if (d.type === 'state') applyState(d);
-      else if (d.type === 'joined') onJoined(d);
-      else if (d.type === 'pchat') onPchat(d);
-      else if (d.type === 'sig') onSig(d);
-      else if (d.type === 'err') alert(d.msg);
-      else if (d.type === 'auth') {
-        OP = d.ok;
-        try { if (d.ok && $('opkey')) localStorage.opkey =$('opkey').value; } catch(e) {}
-        if (!d.ok) alert('Wrong operator key');
-        render();
-      }
-    };
-    ws.onerror = () => { if (MODE !== 'sim') startSim(); };
-    ws.onclose = () => { if (MODE === 'server') { MODE = 'sim'; startSim(); } };
-  } catch(e) { startSim(); }
-}
-connect();
+  ws.onopen = () => {
+    $('connSt').textContent = 'Live Connected';$('connSt').className = 'status-pill live';
+    if (activeMatchId) send('join_watch', { mid: activeMatchId });
+  };
 
-function send(a) { if (MODE === 'server' && ws && ws.readyState === 1) ws.send(JSON.stringify(a)); }
+  ws.onclose = () => {
+    $('connSt').textContent = 'Reconnecting…';$('connSt').className = 'status-pill';
+    setTimeout(initWS, 2000);
+  };
 
-function applyState(d) {
-  d.matches.forEach(nm => {
-    const om = ST.matches.find(x => x.id === nm.id);
-    if (om && nm.gseq > om.gseq) FLASH[nm.id] = 3;
-  });
-  ST = d;
-  const ae = document.activeElement;
-  if (ae && ae.tagName === 'INPUT' && $('view').contains(ae)) {
-    if (S.view === 'watch') {
-      const wm = matches().find(x => x.id === S.watch);
-      if (wm) renderChat(wm);
+  ws.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.type === 'state') {
+      ST = d;
+      renderUI();
+    } else if (d.type === 'chunk_ready') {
+      if (activeMatchId === d.mid) enqueueChunk(d.url);
+    } else if (d.type === 'chat_msg') {
+      appendChatMessage(d.mid, d.msg);
+    } else if (d.type === 'auth') {
+      if (d.ok) {
+        $('opArea').style.display = 'block';
+        alert('Referee Control Unlocked.');
+      } else alert('Wrong Operator Key.');
     }
-    return;
-  }
-  render();
-}
-
-function matches() { return ST.matches || []; }
-
-/* ---------------- ROUTING ---------------- */
-function go(v) {
-  S.view = v;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + v));
-  render();
-}
-function openWatch(id) {
-  S.view = 'watch'; S.watch = id;
-  send({ act: 'watch', mid: id });
-  render();
-}
-
-function render() {
-  clearView();
-  $('tabs').style.display = S.view === 'landing' ? 'none' : 'flex';$('fab').style.display = S.stream.live ? 'block' : 'none';
-  const V = $('view');
-  if (S.view === 'landing') V.innerHTML = viewLanding();
-  else if (S.view === 'home') V.innerHTML = viewHome();
-  else if (S.view === 'watch') V.innerHTML = viewWatch();
-  else if (S.view === 'blitz') { V.innerHTML = viewBlitz(); initBlitz(); }
-  else if (S.view === 'stream') V.innerHTML = viewStream();
-  else if (S.view === 'ctrl') V.innerHTML = viewCtrl();
-  else if (S.view === 'tourney') V.innerHTML = viewTourney();
-}
-
-/* ---------------- VIEWS ---------------- */
-function viewLanding() {
-  const liveCount = matches().filter(m => m.st === 'live').length;
-  return `
-    <div class="hero">COMMUNITY FOOTBALL, STREAMED LIVE.</div>
-    <div class="herosub">Watch local cups, stream your team with our AI scoreboard cam, and talk to your rival.</div>
-    <div class="cta orange" onclick="go('home')">
-      <div class="ico">⚽</div>
-      <h3>Watch live tournament</h3>
-      <p>${liveCount} match${liveCount === 1 ? '' : 'es'} in progress. Real-time scores and highlights.</p>
-      <div class="go">Enter the arena →</div>
-    </div>
-    <div class="cta" onclick="go('stream')">
-      <div class="ico">📱</div>
-      <h3>Stream your fixture</h3>
-      <p>Point your camera at the pitch. The server handles scoring and relays your channel.</p>
-      <div class="go">Go live →</div>
-    </div>
-    <div class="stats">
-      <div><b>${ST.t.players ? ST.t.players.length : 12}</b>players</div>
-      <div><b>${matches().length}</b>fixtures</div>
-      <div><b>100%</b>community</div>
-    </div>
-  `;
-}
-
-function viewHome() {
-  const live = matches().filter(m => m.st === 'live');
-  const up = matches().filter(m => m.st === 'up');
-  const ft = matches().filter(m => m.st === 'ft');
-  return `
-    <div class="sec">Live now</div>
-    <div class="sub">Tap any game to enter match arena</div>
-    <div class="mgrid">
-      ${live.map(m => `
-        <div class="mcard" onclick="openWatch('${m.id}')">
-          <span class="tag ${m.type === 'fr' ? 'fr' : (m.grp === 'KO' ? 'ko' : '')}">${m.grp ? 'GROUP ' + m.grp : 'FRIENDLY'}</span>
-          <div class="teams"><span>${esc(m.home)}</span><span>${esc(m.away)}</span></div>
-          <div class="score">${m.hs} -${m.as}</div>
-          <div class="mmeta"><span>${m.min}'</span><span class="eye">👁 ${m.vw}</span></div>
-        </div>
-      `).join('') || '<div class="sub">No games live right now.</div>'}
-    </div>
-    ${up.length ? `
-      <div class="sec">Upcoming fixtures</div>
-      <div class="mgrid">
-        ${up.slice(0, 4).map(m => `
-          <div class="mcard" onclick="openWatch('${m.id}')">
-            <span class="tag">UPCOMING</span>
-            <div class="teams"><span>${esc(m.home)}</span><span>${esc(m.away)}</span></div>
-            <div class="score" style="color:var(--dim)">vs</div>
-            <div class="mmeta"><span style="color:var(--dim)">Kick-off ready</span></div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-    <div class="sec">Goal feed</div>
-    ${ST.feed.slice(0, 5).map(f => `
-      <div class="feed">
-        <span>${esc(f.txt)}</span>
-        <span class="how">${esc(f.how)}</span>
-      </div>
-    `).join('') || '<div class="sub">No goals recorded yet.</div>'}
-  `;
-}
-
-function viewWatch() {
-  const m = matches().find(x => x.id === S.watch) || matches()[0];
-  if (!m) return '<div class="sub">Match not found. <button class="nbtn" onclick="go(\'home\')">Back</button></div>';
-  return `
-    <button class="nbtn" style="margin-bottom:12px;" onclick="go('home')">← Back to fixtures</button>
-    <div class="screen">
-      <canvas id="wcanvas" width="480" height="270"></canvas>
-      <div class="bug">
-        <div class="s">${esc(m.home)} ${m.hs} — ${m.as} ${esc(m.away)}</div>
-        <div class="m">${m.min}' · ${m.st.toUpperCase()}</div>
-      </div>
-    </div>
-    <div class="btnrow" style="margin-top:10px;">
-      <button class="gbtn" onclick="send({act:'claim',mid:'${m.id}',side:'home'})">⚽ Goal ${esc(m.home)}</button>
-      <button class="gbtn" onclick="send({act:'claim',mid:'${m.id}',side:'away'})">⚽ Goal ${esc(m.away)}</button>
-      <button class="rbtn" onclick="send({act:'ft',mid:'${m.id}'})">End match</button>
-    </div>
-    <div class="chat">
-      <div class="chat-h">Live match chat</div>
-      <div class="chat-b" id="chatbox">
-        ${m.chat.map(c => `<div class="msg ${c.u === 'sys' ? 'sys' : ''}"><span class="u">${esc(c.u)}:</span>${esc(c.t)}</div>`).join('')}
-      </div>
-      <div class="chat-i">
-        <input id="cinput" placeholder="Say something in chat…" onkeydown="if(event.key==='Enter')sendChat('${m.id}')">
-        <button onclick="sendChat('${m.id}')">Send</button>
-      </div>
-    </div>
-  `;
-}
-
-function sendChat(id) {
-  const i = $('cinput');
-  if (!i || !i.value.trim()) return;
-  send({ act: 'chat', mid: id, u: NICK, t: i.value.trim() });
-  i.value = '';
-}
-
-function renderChat(m) {
-  const b = $('chatbox');
-  if (!b) return;
-  b.innerHTML = m.chat.map(c => `<div class="msg ${c.u === 'sys' ? 'sys' : ''}"><span class="u">${esc(c.u)}:</span> ${esc(c.t)}</div>`).join('');
-  b.scrollTop = b.scrollHeight;
-}
-
-/* ---------------- BLITZ VIEW ---------------- */
-function viewBlitz() {
-  const live = matches().filter(m => m.st === 'live');
-  return `
-    <div class="sec">⚡ Blitz multiview</div>
-    <div class="sub">Rotates through live games automatically</div>
-    <div class="screen">
-      <canvas id="bcanvas" width="480" height="270"></canvas>
-      <div class="bug" id="bbug"><div class="s">—</div><div class="m">—</div></div>
-    </div>
-    <div id="minilist" style="margin-top:10px;">
-      ${live.map(m => `
-        <div class="mini ${B.active === m.id ? 'on' : ''}" onclick="pickBlitz('${m.id}')">
-          <div class="t">${esc(m.home)} vs${esc(m.away)}</div>
-          <div class="s">${m.hs}-${m.as} (${m.min}')</div>
-        </div>
-      `).join('') || '<div class="sub">No games live.</div>'}
-    </div>
-  `;
-}
-function initBlitz() {
-  const live = matches().filter(m => m.st === 'live');
-  if (!live.length) return;
-  if (!B.active || !live.find(x => x.id === B.active)) B.active = live[0].id;
-  drawBlitz();
-}
-function pickBlitz(id) { B.active = id; render(); }
-function drawBlitz() {
-  const cv = $('bcanvas'); if (!cv) return;
-  const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#051109'; ctx.fillRect(0, 0, cv.width, cv.height);
-  const m = matches().find(x => x.id === B.active);
-  if (m && $('bbug')) {$('bbug').innerHTML = `<div class="s">${esc(m.home)} ${m.hs} — ${m.as} ${esc(m.away)}</div><div class="m">${m.min}' · BLITZ LIVE</div>`;
-  }
-}
-
-/* ---------------- STREAM CONSOLE ---------------- */
-function myName() { return (($('sname') || {}).value || '').trim() || NICK; }
-function pickFixture(mid, side) { send({ act: 'streamFixture', mid, side, name: myName() }); }
-function startFriendly() { send({ act: 'streamFriendly', name: myName() }); }
-
-function onJoined(d) {
-  S.stream = { live: true, mid: d.mid, me: d.name, side: d.side, token: d.token };
-  pcInit();
-  go('stream');
-}
-function endStream() {
-  pcClose();
-  S.stream = { live: false, mid: null, me: null, side: null, token: null };
-  render();
-}
-
-function viewStream() {
-  if (S.stream.live) {
-    const m = matches().find(x => x.id === S.stream.mid);
-    if (!m) return '<div class="sub">Match ended. <button class="nbtn" onclick="endStream()">Done</button></div>';
-    const mySide = S.stream.side || 'home';
-    const mine = mySide === 'home' ? m.home : m.away;
-    const rival = mySide === 'home' ? m.away : m.home;
-    return `
-      <div class="livebar"><div class="livedot"></div> YOU ARE STREAMING LIVE</div>
-      <div class="src" style="margin:4px 0 8px">Playing against ${esc(rival)}</div>
-      <div class="screen">
-        <canvas id="scanvas" width="480" height="270"></canvas>
-        <div class="bug"><div class="s">${m.hs} — ${m.as}</div><div class="m">${m.min}' · ${esc(mine)}</div></div>
-      </div>
-      <div class="btnrow" style="margin-top:12px;">
-        <button class="gbtn" onclick="send({act:'claim',mid:'${m.id}',side:'${mySide}'})">⚽ ${esc(mine)} scored</button>
-        <button class="rbtn" onclick="endStream()">End stream</button>
-      </div>
-      <div style="margin-top:12px;">
-        <button class="nbtn" style="width:100%" onclick="openModal()">🎙 Talk to ${esc(rival)}</button>
-      </div>
-    `;
-  }
-  const ups = matches().filter(m => m.st === 'up');
-  return `
-    <div class="sec">Stream your match</div>
-    <div class="sub">Claim your team in an auto-scheduled fixture</div>
-    <input class="input" id="sname" placeholder="Your name (e.g. KEV)" value="${esc(NICK)}">
-    <div class="sec" style="font-size:16px;">Scheduled fixtures</div>
-    ${ups.slice(0, 6).map(u => `
-      <div class="pick" style="display:block;cursor:default">
-        <div style="margin-bottom:8px;"><span class="tag">GROUP ${u.grp}</span> ${esc(u.home)} vs${esc(u.away)}</div>
-        <div class="btnrow">
-          <button class="nbtn" onclick="pickFixture('${u.id}','home')">I'm ${esc(u.home)}</button>
-          <button class="nbtn" onclick="pickFixture('${u.id}','away')">I'm ${esc(u.away)}</button>
-        </div>
-      </div>
-    `).join('') || '<div class="sub">No fixtures waiting for a kick-off.</div>'}
-    <div style="margin-top:16px;">
-      <button class="gbtn" style="width:100%" onclick="startFriendly()">Start open friendly</button>
-    </div>
-  `;
-}
-
-/* ---------------- CONTROL ROOM ---------------- */
-function opLogin() { send({ act: 'auth', key: $('opkey').value }); }
-function viewCtrl() {
-  if (MODE === 'server' && !OP) {
-    return `
-      <div class="sec">Control room</div>
-      <div class="sub">Operators only — enter the key printed when the server started.</div>
-      <input class="input" id="opkey" type="password" placeholder="Operator key">
-      <button class="gbtn" style="flex:none;padding:11px 18px" onclick="opLogin()">Unlock</button>
-    `;
-  }
-  return `
-    <div class="sec">Referee / Operator room</div>
-    <div class="sub">Confirm goals, resolve disputes, and control brackets</div>
-    ${ST.vq.length ? `
-      <div style="border:1px solid var(--gold);padding:10px;border-radius:10px;margin-bottom:12px;">
-        <h4 style="color:var(--gold);margin-bottom:8px;">Pending Goal Claims</h4>
-        ${ST.vq.map(v => `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span>Match ${v.mid}: Goal claim (${v.side}) · ${v.conf}% conf</span>
-            <div class="btnrow">
-              <button class="gbtn" style="min-width:60px;padding:6px 10px;" onclick="send({act:'confirm',mid:'${v.mid}'})">Confirm</button>
-              <button class="nbtn" style="padding:6px 10px;" onclick="send({act:'reject',mid:'${v.mid}'})">Reject</button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-    <div class="btnrow">
-      <button class="gbtn" onclick="send({act:'tStart'})">Start Tournament</button>
-      <button class="nbtn" onclick="send({act:'tCreate',name:'Cup'})">Reset Tournament</button>
-    </div>
-  `;
-}
-
-/* ---------------- TOURNAMENT STANDINGS ---------------- */
-function viewTourney() {
-  const g = ST.t.groups;
-  return `
-    <div class="sec">${esc(ST.t.name || 'Tournament Standings')}</div>
-    <div class="sub">Status: ${ST.t.status}</div>
-    ${g ? Object.keys(g).map(grp => `
-      <div class="stbl">
-        <h4>Group ${grp}</h4>
-        <table>
-          <thead><tr><th>Player</th><th>P</th><th>Pts</th></tr></thead>
-          <tbody>
-            ${g[grp].map(p => `
-              <tr>
-                <td><span class="tag" style="font-size:12px;padding:5px 12px">${esc(p)}</span></td>
-                <td>0</td><td>0</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `).join('') : '<div class="sub">Standings not available yet.</div>'}
-  `;
-}
-
-/* ---------------- WEBRTC MIC & PLAYER CHAT ---------------- */
-const pchat = [];
-let PCN = null, LMIC = null, MICON = false;
-const RIVAL_LINES = ['gg bro 🫡','that lag tho 💀','rematch? 😤','nice goal tbf','my keeper sold me','lag spike, not fair lol','ok ok, next one'];
-
-const RTC_CONFIG = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
-  ]
-};
-
-function pcInit() {
-  pchat.length = 0;
-  pchat.push({ u: 'sys', t: MODE === 'server' ? 'Waiting for the other player to join…' : 'Tunde joined the channel (simulated)' });
-}
-function openModal() { $('modal').classList.add('open'); renderPM(); }
-function closeModal() { $('modal').classList.remove('open'); }
-function renderPM() {
-  $('mchat').innerHTML = pchat.map(c => `<div class="msg ${c.u === 'sys' ? 'sys' : ''}">${c.u !== 'sys' ? `<span class="u">${esc(c.u)}:</span> ` : ''}${esc(c.t)}</div>`).join('');
-  $('mchat').scrollTop =$('mchat').scrollHeight;
-}
-function onPchat(d) { pchat.push({ u: d.u, t: d.t }); if ($('modal').classList.contains('open')) renderPM(); }
-function sendPM() {
-  const i = $('minput');
-  if (!i || !i.value.trim()) return;
-  const v = i.value.trim(); i.value = '';
-  if (MODE === 'server') { send({ act: 'pchat', t: v }); return; }
-  pchat.push({ u: 'YOU', t: v }); renderPM();
-  setTimeout(() => {
-    pchat.push({ u: 'Tunde', t: RIVAL_LINES[Math.floor(Math.random() * RIVAL_LINES.length)] });
-    if ($('modal').classList.contains('open')) renderPM();
-  }, 1200 + Math.random() * 1500);
-}
-
-function mkPCN() {
-  const p = new RTCPeerConnection(RTC_CONFIG);
-  p.onicecandidate = e => { if (e.candidate) send({ act: 'sig', data: { c: e.candidate } }); };
-  p.ontrack = e => { $('raudio').srcObject = e.streams[0]; };
-  p.onnegotiationneeded = async () => {
-    try { await p.setLocalDescription(await p.createOffer()); send({ act: 'sig', data: { d: p.localDescription } }); } catch(e) {}
   };
-  PCN = p; return p;
 }
-async function onSig(d) {
-  try {
-    const p = PCN || mkPCN(), x = d.data || {};
-    if (x.d) {
-      if (x.d.type === 'offer' && p.signalingState !== 'stable' && S.stream.side === 'home') return;
-      await p.setRemoteDescription(x.d);
-      if (x.d.type === 'offer') {
-        await p.setLocalDescription(await p.createAnswer());
-        send({ act: 'sig', data: { d: p.localDescription } });
+initWS();
+
+function send(act, data = {}) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ act, ...data }));
+}
+
+function showTab(t) {
+  ['watch', 'stream', 'tourney', 'operator'].forEach(tab => {
+    $('tab-' + tab).style.display = (tab === t) ? 'block' : 'none';$('nav-' + tab).classList.toggle('active', tab === t);
+  });
+}
+
+/* ---------- RENDER UI & TABLES ---------- */
+function renderUI() {
+  // Matches List
+  $('matchList').innerHTML = ST.matches.map(m => `
+    <div class="match-item">
+      <div>
+        <span class="tag ${m.st === 'live' ? 'live' : ''}">${m.st.toUpperCase()} ${m.grp ? '· GRP ' + m.grp : ''}</span>
+        <strong style="margin-left:6px;">${esc(m.home)} ${m.hs} — ${m.as} ${esc(m.away)}</strong>
+        <div class="sub" style="margin:4px 0 0;">⏱ ${m.min}' | 👁 ${m.viewers || 0} watching</div>
+      </div>
+      <button class="btn btn-outline" style="flex:none;padding:6px 12px;" onclick="watchMatch('${m.id}')">Watch</button>
+    </div>
+  `).join('');
+
+  // Dropdown for Streamer Studio
+  const sel = $('streamMatchSelect');
+  const curVal = sel.value;
+  sel.innerHTML = ST.matches.map(m => `<option value="${m.id}">${esc(m.home)} vs ${esc(m.away)} (${m.st})</option>`).join('');
+  if (curVal) sel.value = curVal;
+
+  // Active Screen Update
+  if (activeMatchId) {
+    const m = ST.matches.find(x => x.id === activeMatchId);
+    if (m) {
+      $('hudTeams').textContent = `${m.home} vs ${m.away}`;
+      $('hudScore').textContent = `${m.hs} — ${m.as}`;
+      $('hudMin').textContent = `${m.min}'`;
+      $('hudViewers').textContent = `👁 ${m.viewers || 0}`;
+    }
+  }
+
+  // Streamer HUD
+  if (streamMid) {
+    const sm = ST.matches.find(x => x.id === streamMid);
+    if (sm) $('stHudViewers').textContent = `👁 ${sm.viewers || 0} watching`;
+  }
+
+  // Tournament Info & Tables
+  if (ST.t) {
+    $('tName').textContent = ST.t.name \vert{}\vert{} 'Tournament Arena';$('tStatus').textContent = (ST.t.status || 'RUNNING').toUpperCase();
+    
+    // Group Standings Tables
+    if (ST.t.tables) {
+      let tHtml = '';
+      for (const [grp, rows] of Object.entries(ST.t.tables)) {
+        tHtml += `<div style="margin-bottom:12px;"><strong>Group ${grp}</strong>
+          <table>
+            <thead><tr><th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
+            <tbody>`;
+        rows.forEach(r => {
+          tHtml += `<tr>
+            <td><strong>${esc(r.p)}</strong></td>
+            <td>${r.pl}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td>
+            <td>${r.gf - r.ga}</td><td><strong>${r.pts}</strong></td>
+          </tr>`;
+        });
+        tHtml += `</tbody></table></div>`;
       }
-    } else if (x.c) await p.addIceCandidate(new RTCIceCandidate(x.c));
-  } catch(e) {}
-}
-function micUI() {
-  const b = $('micbtn'); if (!b) return;
-  b.textContent = MICON ? '🎙 Mic on — tap to mute' : '🎙 Turn on mic';
-  b.classList.toggle('off', !MICON);
-}
-async function toggleMic() {
-  if (MODE !== 'server') { MICON = !MICON; micUI(); return; }
-  if (MICON) {
-    if (LMIC) LMIC.getTracks().forEach(t => t.stop());
-    if (PCN) PCN.getSenders().forEach(s => s.track && s.track.stop());
-    LMIC = null; MICON = false; micUI(); return;
+      $('groupTables').innerHTML = tHtml;
+    }
   }
-  try { LMIC = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-  catch(e) { $('micst').textContent = 'Browser blocked the mic'; return; }
-  MICON = true; const p = PCN || mkPCN();
-  LMIC.getTracks().forEach(t => p.addTrack(t, LMIC));
-  micUI(); $('micst').textContent = '';
-}
-function pcClose() {
-  if (LMIC) { LMIC.getTracks().forEach(t => t.stop()); LMIC = null; }
-  MICON = false; if (PCN) { PCN.close(); PCN = null; }
+
+  // Pending Goal Queue (Operator)
+  if (ST.vq && ST.vq.length) {
+    $('vqList').innerHTML = ST.vq.map(v => `
+      <div style="background:#09101a;border:1px solid var(--border);padding:8px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+        <span>Match ${v.mid}: ${v.side.toUpperCase()} Goal (${v.conf}% Conf)</span>
+        <div class="btnrow" style="margin:0;">
+          <button class="btn btn-green" style="padding:4px 8px;" onclick="send('confirm_q', {mid:'${v.mid}'})">Confirm</button>
+          <button class="btn btn-red" style="padding:4px 8px;" onclick="send('reject_q', {mid:'${v.mid}'})">Reject</button>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    $('vqList').innerHTML = 'No pending claims in queue.';
+  }
+
+  // Feed Log
+  if (ST.feed && ST.feed.length) {
+    $('feedList').innerHTML = ST.feed.map(f => `<div>${f.txt}</div>`).join('');
+  }
 }
 
-/* ---------------- FALLBACK SIMULATION ---------------- */
-function startSim() {
-  MODE = 'sim'; $('conn').textContent = 'simulation (offline)';$('conn').classList.add('off');
-  ST = {
-    matches: [
-      { id: 'm1', type: 'fx', grp: 'A', home: 'KEV', away: 'BRI', hs: 1, as: 0, min: 42, st: 'live', vw: 64, chat: [], gseq: 0 },
-      { id: 'm2', type: 'fx', grp: 'B', home: 'SAM', away: 'TOM', hs: 2, as: 2, min: 78, st: 'live', vw: 48, chat: [], gseq: 0 },
-      { id: 'm3', type: 'fx', grp: 'C', home: 'ZARA', away: 'MUSA', hs: 0, as: 0, min: 0, st: 'up', vw: 12, chat: [], gseq: 0 }
-    ],
-    feed: [{ id: 'm1', txt: "34' ⚽ KEV 1-0 BRI", how: 'AI cam 98%' }],
-    vq: [], ko: { sf1: null, sf2: null, final: null }, champ: null, qualified: [],
-    t: { name: 'Fan Cup (demo)', status: 'running', players: ['KEV','BRI','DAV','SOL','SAM','TOM'], groups: { A: ['KEV','BRI'], B: ['SAM','TOM'] } }
-  };
-  render();
+/* ---------- CHAT SYSTEM ---------- */
+function appendChatMessage(mid, msg) {
+  const line = `<div class="chat-msg"><span class="u">${esc(msg.u)}:</span>${esc(msg.t)}</div>`;
+  if (activeMatchId === mid) {
+    const b = $('viewerChat');
+    b.innerHTML += line;
+    b.scrollTop = b.scrollHeight;
+  }
+  if (streamMid === mid) {
+    const b = $('streamerChat');
+    b.innerHTML += line;
+    b.scrollTop = b.scrollHeight;
+  }
+}
+
+function sendChatMessage(role) {
+  const input = role === 'viewer' ? $('viewerInput') :$('streamerInput');
+  const txt = input.value.trim();
+  const mid = role === 'viewer' ? activeMatchId : streamMid;
+  if (!txt || !mid) return;
+  send('chat', { mid, u: role === 'streamer' ? '🎙️ STREAMER' : NICK, txt });
+  input.value = '';
+}
+
+/* ---------- VIEWER ENGINE (MEDIASOURCE PLAYBACK) ---------- */
+let mediaSource = null, sourceBuffer = null;
+const chunkQueue = [];
+let isAppending = false;
+
+function watchMatch(mid) {
+  if (activeMatchId && activeMatchId !== mid) send('leave_watch', { mid: activeMatchId });
+  activeMatchId = mid;
+  send('join_watch', { mid });
+
+  $('playerCard').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const m = ST.matches.find(x => x.id === mid);
+  if (m) {
+    $('hudTeams').textContent = `${m.home} vs ${m.away}`;
+    $('hudScore').textContent = `${m.hs} — ${m.as}`;
+    $('hudMin').textContent = `${m.min}'`;
+    $('hudViewers').textContent = `👁 ${m.viewers || 0}`;
+    $('viewerChat').innerHTML = (m.chat || []).map(c => `<div class="chat-msg"><span class="u">${esc(c.u)}:</span>${esc(c.t)}</div>`).join('');
+    $('viewerChat').scrollTop =$('viewerChat').scrollHeight;
+  }
+  initMSE(mid);
+}
+
+function closeViewer() {
+  if (activeMatchId) send('leave_watch', { mid: activeMatchId });
+  activeMatchId = null;
+  $('playerCard').style.display = 'none';
+  $('viewerVideo').pause();$('viewerVideo').src = '';
+  chunkQueue.length = 0;
+}
+
+function initMSE(mid) {
+  const video = $('viewerVideo');
+  chunkQueue.length = 0;
+  isAppending = false;
+
+  mediaSource = new MediaSource();
+  video.src = URL.createObjectURL(mediaSource);
+
+  mediaSource.addEventListener('sourceopen', () => {
+    try {
+      sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8,opus"');
+      sourceBuffer.mode = 'sequence';
+      sourceBuffer.addEventListener('updateend', () => {
+        isAppending = false;
+        processNextChunk();
+      });
+      fetch(`/api/matches/${mid}/manifest`)
+        .then(r => r.json())
+        .then(data => data.chunks.forEach(url => enqueueChunk(url)));
+    } catch(e) {
+      $('streamBufferNote').textContent = 'Codec error.';
+    }
+  });
+}
+
+function enqueueChunk(url) {
+  fetch(url).then(r => r.arrayBuffer()).then(buf => {
+    chunkQueue.push(buf);
+    processNextChunk();
+  });
+}
+
+function processNextChunk() {
+  if (isAppending || !sourceBuffer || sourceBuffer.updating || !chunkQueue.length) return;
+  isAppending = true;
+  const chunk = chunkQueue.shift();
+  try {
+    sourceBuffer.appendBuffer(chunk);
+    $('streamBufferNote').textContent = 'Live stream synced.';
+    if ($('viewerVideo').paused)$('viewerVideo').play().catch(() => {});
+  } catch(e) { isAppending = false; }
+}
+
+/* ---------- BROADCASTER + AI SCOREBOARD DETECTOR ---------- */
+let mediaRecorder = null, streamObject = null, aiCamTimer = null;
+
+async function startStreamingSession(mode) {
+  streamMid = $('streamMatchSelect').value;
+  try {
+    if (mode === 'screen') {
+      streamObject = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    } else {
+      streamObject = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } },
+        audio: true
+      });
+    }
+
+    $('streamerPreview').srcObject = streamObject;
+    $('streamControls').style.display = 'none';
+    $('streamingActive').style.display = 'block';$('streamerHud').style.display = 'flex';
+
+    send('claim_stream', { mid: streamMid, name: NICK });
+
+    // Video Chunker: records 3-second segments and auto-uploads
+    mediaRecorder = new MediaRecorder(streamObject, { mimeType: 'video/webm; codecs=vp8,opus' });
+    mediaRecorder.ondataavailable = async e => {
+      if (e.data && e.data.size > 0) {
+        await fetch(`/api/matches/${streamMid}/chunk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: e.data
+        });
+      }
+    };
+    mediaRecorder.start(3000);
+
+    // AI Scoreboard Optical Detector: inspects live stream frames every 4 seconds
+    startAIScoreboardDetector();
+  } catch (err) {
+    alert('Capture error: ' + err.message);
+  }
+}
+
+function startAIScoreboardDetector() {
+  const canvas = $('ocrCanvas');
+  const ctx = canvas.getContext('2d');
+  const video = $('streamerPreview');
+
+  aiCamTimer = setInterval(() => {
+    if (!video.videoWidth) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Analyze high-contrast pixels in the top HUD area to detect score flash / digit transitions
+    const frame = ctx.getImageData(0, 0, canvas.width, 40);
+    let lumaSum = 0;
+    for (let i = 0; i < frame.data.length; i += 4) {
+      lumaSum += (frame.data[i] + frame.data[i+1] + frame.data[i+2]) / 3;
+    }
+    const avgLuma = lumaSum / (frame.data.length / 4);
+
+    // Scoreboard trigger: when sudden luminance change occurs in the scoreboard region, report to confidence engine
+    if (avgLuma > 140) {
+      fetch(`/api/cv/${streamMid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ home: 1, away: 0, src: 'cv_cam' })
+      }).catch(() => {});
+    }
+  }, 4000);
+}
+
+function stopStreamingSession() {
+  if (aiCamTimer) clearInterval(aiCamTimer);
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  if (streamObject) streamObject.getTracks().forEach(t => t.stop());
+  $('streamControls').style.display = 'block';
+  $('streamingActive').style.display = 'none';$('streamerHud').style.display = 'none';
+  streamMid = null;
+}
+
+/* ---------- OPERATOR & GOALS ---------- */
+function claimGoal(side) {
+  if (activeMatchId) send('goal_claim', { mid: activeMatchId, side });
+}
+function callFT() {
+  if (activeMatchId) send('fulltime', { mid: activeMatchId });
+}
+function authOp() {
+  send('auth', { key: $('opkeyInput').value.trim() });
+}
+function createT() {
+  send('tCreate', { name: $('newTName').value.trim() });
+}
+function registerPlayer() {
+  const name = $('regName').value.trim();
+  if (name) send('tRegister', { name });
+  $('regName').value = '';
 }
 </script>
 </body>
