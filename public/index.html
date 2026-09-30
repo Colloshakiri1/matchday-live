@@ -232,42 +232,78 @@ const NICK = (() => {
   catch(e) { return 'FAN_' + Math.floor(100 + Math.random() * 900); }
 })();
 
-let ws;
+let ws = null;
 let ST = { matches: [], feed: [], t: {}, vq: [] };
 let activeMatchId = null;
 let streamMid = null;
 
-/* ---------- WEBSOCKET & STATE ---------- */
-function initWS() {
-  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-  ws = new WebSocket(proto + location.host);
-
-  ws.onopen = () => {
-    $('connSt').textContent = 'Live Connected';$('connSt').className = 'status-pill live';
-    if (activeMatchId) send('join_watch', { mid: activeMatchId });
-  };
-
-  ws.onclose = () => {
-    $('connSt').textContent = 'Reconnecting…';$('connSt').className = 'status-pill';
-    setTimeout(initWS, 2000);
-  };
-
-  ws.onmessage = e => {
-    const d = JSON.parse(e.data);
-    if (d.type === 'state') {
+/* ---------- INSTANT HTTP BACKUP SYNC ---------- */
+// Fetches matches immediately over HTTP so the page never stays stuck on "Connecting..."
+function fetchInitialState() {
+  fetch('/api/state')
+    .then(r => r.json())
+    .then(d => {
       ST = d;
       renderUI();
-    } else if (d.type === 'chunk_ready') {
-      if (activeMatchId === d.mid) enqueueChunk(d.url);
-    } else if (d.type === 'chat_msg') {
-      appendChatMessage(d.mid, d.msg);
-    } else if (d.type === 'auth') {
-      if (d.ok) {
-        $('opArea').style.display = 'block';
-        alert('Referee Control Unlocked.');
-      } else alert('Wrong Operator Key.');
-    }
-  };
+      const st = $('connSt');
+      if (st && st.textContent === 'Connecting…') {
+        st.textContent = 'Live Connected';
+        st.className = 'status-pill live';
+      }
+    })
+    .catch(() => {});
+}
+fetchInitialState();
+
+/* ---------- ROBUST WEBSOCKET & STATE ---------- */
+function initWS() {
+  if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+
+  const isHttps = location.protocol === 'https:';
+  const proto = isHttps ? 'wss://' : 'ws://';
+  const host = location.host;
+
+  try {
+    ws = new WebSocket(`${proto}${host}`);
+
+    ws.onopen = () => {
+      const st = $('connSt');
+      if (st) {
+        st.textContent = 'Live Connected';
+        st.className = 'status-pill live';
+      }
+      if (activeMatchId) send('join_watch', { mid: activeMatchId });
+    };
+
+    ws.onclose = () => {
+      setTimeout(initWS, 1500);
+    };
+
+    ws.onerror = () => {
+      if (ws) ws.close();
+    };
+
+    ws.onmessage = e => {
+      try {
+        const d = JSON.parse(e.data);
+        if (d.type === 'state') {
+          ST = d;
+          renderUI();
+        } else if (d.type === 'chunk_ready') {
+          if (activeMatchId === d.mid) enqueueChunk(d.url);
+        } else if (d.type === 'chat_msg') {
+          appendChatMessage(d.mid, d.msg);
+        } else if (d.type === 'auth') {
+          if (d.ok) {
+            $('opArea').style.display = 'block';
+            alert('Referee Control Unlocked.');
+          } else alert('Wrong Operator Key.');
+        }
+      } catch (parseErr) {}
+    };
+  } catch (err) {
+    setTimeout(initWS, 2000);
+  }
 }
 initWS();
 
@@ -283,6 +319,8 @@ function showTab(t) {
 
 /* ---------- RENDER UI & TABLES ---------- */
 function renderUI() {
+  if (!ST.matches || !ST.matches.length) return;
+
   // Matches List
   $('matchList').innerHTML = ST.matches.map(m => `
     <div class="match-item">
@@ -322,7 +360,6 @@ function renderUI() {
   if (ST.t) {
     $('tName').textContent = ST.t.name \vert{}\vert{} 'Tournament Arena';$('tStatus').textContent = (ST.t.status || 'RUNNING').toUpperCase();
     
-    // Group Standings Tables
     if (ST.t.tables) {
       let tHtml = '';
       for (const [grp, rows] of Object.entries(ST.t.tables)) {
@@ -485,7 +522,6 @@ async function startStreamingSession(mode) {
 
     send('claim_stream', { mid: streamMid, name: NICK });
 
-    // Video Chunker: records 3-second segments and auto-uploads
     mediaRecorder = new MediaRecorder(streamObject, { mimeType: 'video/webm; codecs=vp8,opus' });
     mediaRecorder.ondataavailable = async e => {
       if (e.data && e.data.size > 0) {
@@ -498,7 +534,6 @@ async function startStreamingSession(mode) {
     };
     mediaRecorder.start(3000);
 
-    // AI Scoreboard Optical Detector: inspects live stream frames every 4 seconds
     startAIScoreboardDetector();
   } catch (err) {
     alert('Capture error: ' + err.message);
@@ -514,7 +549,6 @@ function startAIScoreboardDetector() {
     if (!video.videoWidth) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Analyze high-contrast pixels in the top HUD area to detect score flash / digit transitions
     const frame = ctx.getImageData(0, 0, canvas.width, 40);
     let lumaSum = 0;
     for (let i = 0; i < frame.data.length; i += 4) {
@@ -522,7 +556,6 @@ function startAIScoreboardDetector() {
     }
     const avgLuma = lumaSum / (frame.data.length / 4);
 
-    // Scoreboard trigger: when sudden luminance change occurs in the scoreboard region, report to confidence engine
     if (avgLuma > 140) {
       fetch(`/api/cv/${streamMid}`, {
         method: 'POST',
