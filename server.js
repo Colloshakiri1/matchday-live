@@ -3,12 +3,10 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
-const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 3000;
 const OPKEY = process.env.OPERATOR_KEY || 'admin123';
-const CVKEY = process.env.CV_KEY || 'cv-secret';
 const GL = 'ABCDEFGHIJKLMNOP';
 
 const app = express();
@@ -33,11 +31,11 @@ const mkMatch = (type, grp, home, away) => ({
   hs: 0,
   as: 0,
   min: 0,
-  st: 'up', // 'up' | 'live' | 'ft'
+  st: 'up',
   streamer: null,
   chunks: [],
   chat: [],
-  det: null, // confidence detector state
+  det: null,
   koSlot: null
 });
 
@@ -45,14 +43,14 @@ const DEMO = { A: ['KEV', 'BRI', 'DAV', 'SOL'], B: ['SAM', 'TOM', 'EMMA', 'JOE']
 let GROUPS = DEMO;
 const T = {
   name: 'Community Cup',
-  status: 'running', // 'registration' | 'running'
+  status: 'running',
   players: Object.values(DEMO).flat(),
   groups: DEMO
 };
 
 const M = [];
 const UPG = {};
-const VQ = []; // Verification queue
+const VQ = [];
 const feed = [];
 const clients = new Set();
 let KO = { sf1: null, sf2: null, final: null, seeded: false };
@@ -110,7 +108,6 @@ function getTable(g) {
 function checkAndSeedKO() {
   if (KO.seeded) return;
   const gs = Object.keys(GROUPS);
-  // Ensure all group matches are finished
   if (gs.some(k => M.some(x => x.grp === k && x.st !== 'ft'))) return;
 
   const rows = [];
@@ -124,7 +121,7 @@ function checkAndSeedKO() {
   const s1 = mkMatch('fx', 'KO', q[0].p, q[3].p); s1.koSlot = 'sf1'; s1.st = 'live';
   const s2 = mkMatch('fx', 'KO', q[1].p, q[2].p); s2.koSlot = 'sf2'; s2.st = 'live';
   M.push(s1, s2);
-  feed.unshift({ txt: `🏆 SEMIFINALS SEEDED: ${s1.home} vs ${s1.away} & ${s2.home} vs ${s2.away}` });
+  feed.unshift({ txt: `🏆 SEMIFINALS: ${s1.home} vs ${s1.away} & ${s2.home} vs ${s2.away}` });
   broadcast(state());
 }
 
@@ -149,7 +146,7 @@ function processDetection(m, side, src) {
     const goalSide = m.det.side;
     m.det = null;
     deQueue(m.id);
-    publishGoal(m, goalSide, `AI Scoreboard (${src})`);
+    publishGoal(m, goalSide, `AI Cam (${src})`);
   } else {
     if (!VQ.find(v => v.mid === m.id)) {
       VQ.push({ mid: m.id, side: m.det.side, conf: m.det.conf, ts: Date.now() });
@@ -171,7 +168,6 @@ const deQueue = mid => {
   if (i > -1) VQ.splice(i, 1);
 };
 
-/* ---------- Broadcast & Helpers ---------- */
 function viewerCount(mid) {
   let c = 0;
   clients.forEach(ws => { if (ws.readyState === 1 && ws.watchingMid === mid) c++; });
@@ -202,7 +198,12 @@ function broadcast(data) {
   clients.forEach(c => { if (c.readyState === 1) c.send(msg); });
 }
 
-/* ---------- Endpoints ---------- */
+/* ---------- HTTP Endpoints ---------- */
+// Instant HTTP state backup endpoint so page populates immediately
+app.get('/api/state', (req, res) => {
+  res.json(state());
+});
+
 app.post('/api/matches/:id/chunk', express.raw({ type: '*/*', limit: '25mb' }), (req, res) => {
   const m = M.find(x => x.id === req.params.id);
   if (!m) return res.status(404).send('Match not found');
@@ -231,7 +232,6 @@ app.get('/api/matches/:id/manifest', (req, res) => {
   res.json({ id: m.id, chunks: m.chunks.map(f => `/api/chunks/${f}`) });
 });
 
-// AI Scoreboard Reporter endpoint
 app.post('/api/cv/:id', (req, res) => {
   const m = M.find(x => x.id === req.params.id);
   if (!m || m.st !== 'live') return res.sendStatus(404);
@@ -276,7 +276,7 @@ wss.on('connection', ws => {
         if (m) {
           m.streamer = msg.name || 'ANON';
           m.st = 'live';
-          feed.unshift({ txt: `📱 ${m.streamer} is live streaming ${m.home} vs ${m.away}` });
+          feed.unshift({ txt: `📱 ${m.streamer} is live on ${m.home} vs ${m.away}` });
           broadcast(state());
         }
         break;
@@ -301,7 +301,7 @@ wss.on('connection', ws => {
           const v = VQ.find(x => x.mid === m.id);
           if (v) {
             deQueue(m.id);
-            publishGoal(m, v.side, 'Referee Overrode');
+            publishGoal(m, v.side, 'Referee Confirmed');
           }
         }
         break;
@@ -325,18 +325,17 @@ wss.on('connection', ws => {
             fin.koSlot = 'final'; fin.st = 'live';
             KO.final = 1;
             M.push(fin);
-            feed.unshift({ txt: `🏆 THE FINAL IS LIVE: ${fin.home} vs ${fin.away}` });
+            feed.unshift({ txt: `🏆 FINAL IS LIVE: ${fin.home} vs ${fin.away}` });
           }
           if (m.koSlot === 'final' && !CHAMP) {
             CHAMP = m.hs >= m.as ? m.home : m.away;
-            feed.unshift({ txt: `👑 TOURNAMENT CHAMPION: ${CHAMP}!` });
+            feed.unshift({ txt: `👑 CHAMPION: ${CHAMP}!` });
           }
           checkAndSeedKO();
           broadcast(state());
         }
         break;
 
-      /* Tournament Registration & Lifecycle */
       case 'tCreate':
         if (ws.op) {
           T.name = String(msg.name || 'Tournament').slice(0, 30);
@@ -353,7 +352,7 @@ wss.on('connection', ws => {
           const p = String(msg.name).toUpperCase().trim().slice(0, 10);
           if (!T.players.includes(p) && T.players.length < 32) {
             T.players.push(p);
-            feed.unshift({ txt: `👤 ${p} registered for ${T.name}` });
+            feed.unshift({ txt: `👤 ${p} joined ${T.name}` });
             broadcast(state());
           }
         }
@@ -370,7 +369,7 @@ wss.on('connection', ws => {
           T.groups = g;
           T.status = 'running';
           buildWorld();
-          feed.unshift({ txt: `⚡ ${T.name} groups auto-drawn! Fixtures ready.` });
+          feed.unshift({ txt: `⚡ ${T.name} groups drawn!` });
           broadcast(state());
         }
         break;
@@ -383,7 +382,6 @@ wss.on('connection', ws => {
   });
 });
 
-// Real-time match clock
 setInterval(() => {
   M.forEach(m => {
     if (m.st === 'live' && m.min < 90) m.min++;
